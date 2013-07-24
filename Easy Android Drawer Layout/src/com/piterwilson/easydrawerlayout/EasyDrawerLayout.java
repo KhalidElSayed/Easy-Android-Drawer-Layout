@@ -1,15 +1,34 @@
+/*
+    Easy Drawer Layout
+    Copyright (C) 2013  Juan Carlos Ospina Gonzalez
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    
+ */
+
 package com.piterwilson.easydrawerlayout;
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.view.Display;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -25,8 +44,10 @@ public class EasyDrawerLayout extends Activity {
 	// the main content we move left and right to open/close menu
 	private LinearLayout mMainContent;
 	// width of the menu content
-	private int mMenuWidth = 300;
-	// onclick listener for the button
+	private int mMenuWidth = 400;
+	// duration of the transition
+	private int mTransitionDuration = 250;
+	// OnClickListener listener for the button
 	private View.OnClickListener toggleButtonClickListener = new View.OnClickListener() {
 		
 		@Override
@@ -35,7 +56,8 @@ public class EasyDrawerLayout extends Activity {
 			if(mAnimating) return;
 			if(!mOpen)
 			{
-				Animation animation = AnimationUtils.loadAnimation(EasyDrawerLayout.this, R.anim.drawer_right);
+				Animation animation = new TranslateAnimation (0, mMenuWidth, 0, 0);
+				animation.setDuration(mTransitionDuration);
 				animation.setAnimationListener(new Animation.AnimationListener() {
 					
 					@Override
@@ -62,7 +84,8 @@ public class EasyDrawerLayout extends Activity {
 			}
 			else
 			{
-				Animation animation = AnimationUtils.loadAnimation(EasyDrawerLayout.this, R.anim.drawer_left);
+				Animation animation = new TranslateAnimation (0, -mMenuWidth, 0, 0);
+				animation.setDuration(mTransitionDuration);
 				animation.setAnimationListener(new Animation.AnimationListener() {
 					
 					@Override
@@ -84,9 +107,12 @@ public class EasyDrawerLayout extends Activity {
 						mMenuToggleButton.setText(R.string.open);
 					}
 				});
+				
 				mAnimating = true;
 				mMainContent.startAnimation(animation);
+				
 			}
+			
 			mOpen = !mOpen;
 		}
 	};
@@ -94,8 +120,9 @@ public class EasyDrawerLayout extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		// not open!
 		mOpen = false;
+		// not animating!
 		mAnimating = false;
 		//get screen size
 		Display display = getWindowManager().getDefaultDisplay();
@@ -103,6 +130,8 @@ public class EasyDrawerLayout extends Activity {
 		display.getSize(size);
 		int width = size.x;
 		int height = size.y;
+		
+		// make fullscreen!
 		//Remove title bar
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		//Remove notification bar
