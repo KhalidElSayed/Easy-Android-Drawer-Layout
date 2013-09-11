@@ -19,138 +19,87 @@
 
 package com.piterwilson.easydrawerlayout;
 
+import java.util.ArrayList;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.graphics.Point;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.Menu;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+
+import com.piterwilson.easydrawerlayout.interfaces.EasyDrawerMenuListener;
 
 public class EasyDrawerLayout extends Activity {
+	// the left side content (usually a menu)
+	View mMenu;
+	// the right side content
+	View mContent;
+	// the amount of motion performed when opening the drawer
+	int mMenuWidth;
+	// the time it takes to open the drawer
+	int mTransitionDuration;
+	// the button that opens/closes the drawer
+	Button mOpenCloseButton;
+	// whether or not the drawer is open
+	boolean mOpen;
+	// an array of listeners for the open/close eventss
+	private ArrayList<EasyDrawerMenuListener> listeners;
 	
-	// whether or not the menu is open
-	private boolean mOpen = false;
-	//the button that toggles the opening and closing of the menu
-	private Button mMenuToggleButton;
-	// whether or not the menu is already animating
-	private boolean mAnimating;
-	// the main content we move left and right to open/close menu
-	private LinearLayout mMainContent;
-	// width of the menu content
-	private int mMenuWidth = 400;
-	// duration of the transition
-	private int mTransitionDuration = 250;
-	// OnClickListener listener for the button
-	private View.OnClickListener toggleButtonClickListener = new View.OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			// if already moving do nothing...
-			if(mAnimating) return;
-			if(!mOpen)
-			{
-				Animation animation = new TranslateAnimation (0, mMenuWidth, 0, 0);
-				animation.setDuration(mTransitionDuration);
-				animation.setAnimationListener(new Animation.AnimationListener() {
-					
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						mMainContent.clearAnimation();
-						
-						FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(mMainContent.getLayoutParams());
-						params.setMargins(0, 0, 0, 0);
-						mMainContent.setLayoutParams(params);
-						mAnimating = false;
-						mMenuToggleButton.setText(R.string.close);
-					}
-				});
-				mAnimating = true;
-				mMainContent.startAnimation(animation);
-			}
-			else
-			{
-				Animation animation = new TranslateAnimation (0, -mMenuWidth, 0, 0);
-				animation.setDuration(mTransitionDuration);
-				animation.setAnimationListener(new Animation.AnimationListener() {
-					
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						
-						mMainContent.clearAnimation();
-						FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(mMainContent.getLayoutParams());
-						params.setMargins(-mMenuWidth, 0, 0, 0);
-						mMainContent.setLayoutParams(params);
-						mAnimating = false;
-						mMenuToggleButton.setText(R.string.open);
-					}
-				});
-				
-				mAnimating = true;
-				mMainContent.startAnimation(animation);
-				
-			}
-			
-			mOpen = !mOpen;
-		}
-	};
-	
+	// this is just a listener for testing to demonstrate how to listen for open/close of the drawer
+	private ASimpleDrawerListener aListener;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// not open!
-		mOpen = false;
-		// not animating!
-		mAnimating = false;
-		//get screen size
-		Display display = getWindowManager().getDefaultDisplay();
-		Point size = new Point();
-		display.getSize(size);
-		int width = size.x;
-		int height = size.y;
-		
-		// make fullscreen!
-		//Remove title bar
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		//Remove notification bar
-		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		
-		// add the content view
 		setContentView(R.layout.activity_easy_drawer_layout);
+
+		// init
+		listeners = new ArrayList<EasyDrawerMenuListener>();
+		mOpen = false;
+		mMenuWidth = 200;
+		mTransitionDuration = 250;
+
+		// init views
+		mMenu = this.findViewById(R.id.menu_wrapper);
+		mContent = this.findViewById(R.id.content_wrapper);
+
+		// init button
+		mOpenCloseButton = (Button) findViewById(R.id.openCloseButton);
+		mOpenCloseButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (mOpen) {
+					closeDrawer();
+				} else {
+					openDrawer();
+				}
+			}
+		});
+
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		// add a listener, just for kicks
+		aListener = new ASimpleDrawerListener();
+		addEasyDrawerListener(aListener);
+	}
+	
+	@Override
+	public void onStop()
+	{
+		super.onStop();
 		
-		mMainContent = (LinearLayout)findViewById(R.id.content_holder);
-		FrameLayout.LayoutParams mainLayoutParams = new FrameLayout.LayoutParams(width + mMenuWidth,height);
-		mainLayoutParams.setMargins(-mMenuWidth, 0, 0, 0);
+		//remove it
+		removeEasyDrawerListener(aListener);
+		aListener = null;
 		
-		mMainContent.setLayoutParams(mainLayoutParams);
-		
-		mMenuToggleButton = (Button)this.findViewById(R.id.button1);
-		mMenuToggleButton.setOnClickListener(toggleButtonClickListener);
-		
-		LinearLayout left = (LinearLayout)findViewById(R.id.left_content);
-		left.setLayoutParams(new LinearLayout.LayoutParams(mMenuWidth,height));
 	}
 
 	@Override
@@ -158,6 +107,70 @@ public class EasyDrawerLayout extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.easy_drawer_layout, menu);
 		return true;
+	}
+
+	/****************************************
+	 * 
+	 * Open / Close drawer
+	 * 
+	 ****************************************/
+
+	private void openDrawer() {
+		ObjectAnimator anim = ObjectAnimator.ofFloat(mContent, "translationX",
+				mContent.getTranslationX(), mMenuWidth);
+		anim.setDuration(mTransitionDuration);
+		anim.addListener(new AnimatorListenerAdapter() {
+			public void onAnimationEnd(Animator animation) {
+				// Log.d(TAG, "onAnimationEnd");
+				mOpen = true;
+				mOpenCloseButton.setText(R.string.close);
+				dispatchOnMenuOpen();
+			}
+		});
+		anim.start();
+	}
+
+	private void closeDrawer() {
+
+		ObjectAnimator anim = ObjectAnimator.ofFloat(mContent, "translationX",
+				mContent.getTranslationX(), 0);
+		anim.setDuration(mTransitionDuration);
+		anim.addListener(new AnimatorListenerAdapter() {
+			public void onAnimationEnd(Animator animation) {
+				// Log.d(TAG, "onAnimationEnd");
+				mOpen = false;
+				mOpenCloseButton.setText(R.string.open);
+				dispatchOnMenuClosed();
+			}
+		});
+		anim.start();
+
+	}
+
+	protected void dispatchOnMenuClosed() {
+		for (EasyDrawerMenuListener l : listeners) {
+			l.onMenuClosed();
+		}
+	}
+
+	/****************************************
+	 * 
+	 * Notify others
+	 * 
+	 ****************************************/
+
+	protected void dispatchOnMenuOpen() {
+		for (EasyDrawerMenuListener l : listeners) {
+			l.onMenuOpen();
+		}
+	}
+
+	public void addEasyDrawerListener(EasyDrawerMenuListener l) {
+		listeners.add(l);
+	}
+
+	public void removeEasyDrawerListener(EasyDrawerMenuListener l) {
+		listeners.remove(l);
 	}
 
 }

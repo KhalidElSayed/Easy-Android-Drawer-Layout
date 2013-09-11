@@ -4,18 +4,6 @@ Easy Android Drawer Layout
 
 This Eclipse Android project is intended as a design exercise and created to provide a dead simple implementation that would replicate the 'Drawer Layout navigation' seen in popular apps like Facebook etc…
 
-HOW IT WORKS
-------------
-
-A FrameLayout is created and inside it there is a master Linear Layout (id 'content_holder'). This master LinearLayout contains 2 LinearLayouts that correspond to an area reserved for a menu (id 'left_content') and main content (id 'right_content') of the application. 
-
-At the Activity's overridden onCreate method, the screen is measured and the calculated width used to size the main content are (id 'right_content').
-
-In this example, the left side area's width (id 'left_content') is sized using the mMenuWidth property.
-
-The main content holder's width is set at right_content + left_content.
-
-The duration of the animation transition is controlled by the mTransitionDuration property.
 
 DISCLAIMER
 ----------
@@ -27,8 +15,7 @@ WHY?
 
 Being relatively new to Android, i was surprised at how complex this implementation can get with other solutions.
 
-Additionally, Google's official solution does not have the exact behaviour i was looking for, which is that the whole content would move to the side when the menu was revealed
-(The menu part would overlay over the main content using Google's DrawerLayout).
+Additionally, Google's official solution does not have the exact behaviour i was looking for, which is that the whole content would move to the side when the menu was revealed (The menu part would overlay over the main content using Google's DrawerLayout).
 
 Enjoy!
 
