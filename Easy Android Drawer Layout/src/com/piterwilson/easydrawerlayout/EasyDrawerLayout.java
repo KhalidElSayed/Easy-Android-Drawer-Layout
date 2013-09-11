@@ -147,23 +147,29 @@ public class EasyDrawerLayout extends Activity {
 
 	}
 
+	/****************************************
+	 * 
+	 * Notify others
+	 * 
+	 ****************************************/
+	
 	protected void dispatchOnMenuClosed() {
 		for (EasyDrawerMenuListener l : listeners) {
 			l.onMenuClosed();
 		}
 	}
 
-	/****************************************
-	 * 
-	 * Notify others
-	 * 
-	 ****************************************/
-
 	protected void dispatchOnMenuOpen() {
 		for (EasyDrawerMenuListener l : listeners) {
 			l.onMenuOpen();
 		}
 	}
+	
+	/****************************************
+	 * 
+	 * Add/Remove others to be notified
+	 * 
+	 ****************************************/
 
 	public void addEasyDrawerListener(EasyDrawerMenuListener l) {
 		listeners.add(l);
